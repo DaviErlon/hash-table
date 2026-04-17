@@ -20,13 +20,13 @@ typedef struct entry {
 } entry;
 
 typedef struct table {
-    int size;
+    int tamanho;
     int capacidade;
     entry **dados;
 } Table;
 ```
 
-- `size` → número de elementos
+- `tamanho` → número de elementos
 - `capacidade` → número de buckets
 - `dados` → array de listas encadeadas
 
@@ -41,13 +41,13 @@ Table *NewTable(int capacidade);
 ### Inserir ou atualizar valor
 
 ```c
-bool SetValue(Table *table, const char *chave, const char *valor);
+bool Set(Table *table, const char *chave, const char *valor);
 ```
 
 ### Buscar valor
 
 ```c
-const char *GetByKey(Table *table, const char *chave);
+const char *Get(Table *table, const char *chave);
 ```
 
 Retorna `NULL` se a chave não existir.
@@ -58,6 +58,12 @@ Retorna `NULL` se a chave não existir.
 bool ContainsKey(Table *table, const char *chave);
 ```
 
+### Remover Chave-Valor
+
+```c
+void Remove(Table *table, const char *chave);
+```
+
 ### Liberar memória
 
 ```c
@@ -65,6 +71,8 @@ void FreeTable(Table *table);
 ```
 
 Libera toda a memória da tabela.
+
+
 
 ## Colisões
 

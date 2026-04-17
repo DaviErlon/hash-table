@@ -5,10 +5,11 @@
 
 typedef struct table Table;
 
-const char *GetByKey(Table *table, const char *chave);
+const char *Get(Table *table, const char *chave);
 Table *NewTable(int capacidade);
-bool SetValue(Table *table, const char *chave, const char *valor);
+bool Put(Table *table, const char *chave, const char *valor);
 void FreeTable(Table *table);
 bool ContainsKey(Table* table, const char* chave);
+bool Remove(Table *table, const char *chave);
 
 #endif

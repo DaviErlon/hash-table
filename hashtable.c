@@ -12,7 +12,7 @@ typedef struct entry
 
 typedef struct table
 {
-    int size;
+    int tamanho;
     int capacidade;
     entry **dados;
 } Table;
@@ -22,26 +22,33 @@ long long int hashFunction(const char *chave)
     if (!chave || chave[0] == '\0')
         return -1;
 
-    long long int resultado = 1;
+    unsigned long hash = 5381;
 
     for (int i = 0; chave[i] != '\0'; i++)
     {
-        resultado *= (chave[i] + 1);
+        hash = ((hash << 5) + hash) + chave[i];
     }
 
-    return resultado;
+    return hash;
 }
 
-const char *GetByKey(Table *table, const char *chave)
+static int getIndex(Table *table, const char *chave)
+{
+    long long int hash = hashFunction(chave);
+    if (hash == -1)
+        return -1;
+
+    return (hash % table->capacidade + table->capacidade) % table->capacidade;
+}
+
+const char *Get(Table *table, const char *chave)
 {
     if (!table)
         return NULL;
 
-    long long int hash = hashFunction(chave);
-    if (hash == -1)
+    int indice = getIndex(table, chave);
+    if (indice == -1)
         return NULL;
-
-    int indice = hash % table->capacidade;
 
     entry *atual = table->dados[indice];
 
@@ -56,13 +63,13 @@ const char *GetByKey(Table *table, const char *chave)
     return NULL;
 }
 
-static char* string_dup(const char* s)
+static char *string_dup(const char *s)
 {
     if (!s)
         return NULL;
 
     size_t len = strlen(s) + 1;
-    char* copy = malloc(len);
+    char *copy = malloc(len);
 
     if (!copy)
         return NULL;
@@ -75,6 +82,7 @@ void insertEntry(Table *table, int indice, const char *chave, const char *valor)
 {
     entry *atual = table->dados[indice];
 
+    // 🔁 procura chave existente
     while (atual)
     {
         if (strcmp(atual->chave, chave) == 0)
@@ -84,7 +92,7 @@ void insertEntry(Table *table, int indice, const char *chave, const char *valor)
             return;
         }
 
-        if (atual->prox == NULL)
+        if (!atual->prox)
             break;
 
         atual = atual->prox;
@@ -110,12 +118,12 @@ void insertEntry(Table *table, int indice, const char *chave, const char *valor)
     else
         atual->prox = novo;
 
-    table->size++;
+    table->tamanho++;
 }
 
 Table *NewTable(int capacidade)
 {
-    if (capacidade <= 0)
+    if (capacidade <= 1)
         return NULL;
 
     Table *table = malloc(sizeof(Table));
@@ -129,7 +137,7 @@ Table *NewTable(int capacidade)
         return NULL;
     }
 
-    table->size = 0;
+    table->tamanho = 0;
     table->capacidade = capacidade;
 
     for (int i = 0; i < capacidade; i++)
@@ -140,16 +148,14 @@ Table *NewTable(int capacidade)
     return table;
 }
 
-bool SetValue(Table *table, const char *chave, const char *valor)
+bool Put(Table *table, const char *chave, const char *valor)
 {
     if (!table)
         return false;
 
-    long long int hash = hashFunction(chave);
-    if (hash == -1)
+    int indice = getIndex(table, chave);
+    if (indice == -1)
         return false;
-
-    int indice = hash % table->capacidade;
 
     insertEntry(table, indice, chave, valor);
 
@@ -182,5 +188,58 @@ void FreeTable(Table *table)
 
 bool ContainsKey(Table *table, const char *chave)
 {
-    return GetByKey(table, chave) != NULL;
+    if (!table)
+        return false;
+
+    int indice = getIndex(table, chave);
+    if (indice == -1)
+        return false;
+
+    entry *atual = table->dados[indice];
+
+    while (atual)
+    {
+        if (strcmp(atual->chave, chave) == 0)
+            return true;
+
+        atual = atual->prox;
+    }
+
+    return false;
+}
+
+bool Remove(Table *table, const char *chave)
+{
+    if (!table)
+        return false;
+
+    int indice = getIndex(table, chave);
+    if (indice == -1)
+        return false;
+
+    entry *atual = table->dados[indice];
+    entry *anterior = NULL;
+
+    while (atual)
+    {
+        if (strcmp(atual->chave, chave) == 0)
+        {
+            if (anterior == NULL)
+                table->dados[indice] = atual->prox;
+            else
+                anterior->prox = atual->prox;
+
+            free(atual->chave);
+            free(atual->valor);
+            free(atual);
+
+            table->tamanho--;
+            return true;
+        }
+
+        anterior = atual;
+        atual = atual->prox;
+    }
+
+    return false;
 }

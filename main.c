@@ -5,13 +5,16 @@ int main()
 {
     Table *t = NewTable(10);
 
-    SetValue(t, "nome", "davi");
-    SetValue(t, "idade", "21");
-    SetValue(t, "curso", "ciencia da computacao");
+    Put(t, "nome", "davi");
+    Put(t, "idade", "21");
+    Put(t, "curso", "ciencia da computacao");
 
-    printf("%s\n", GetByKey(t, "nome"));
-    printf("%s\n", GetByKey(t, "idade"));
-    printf("%s\n", GetByKey(t, "curso"));
+    printf("%s\n", Get(t, "nome"));
+    printf("%s\n", Get(t, "idade"));
+    printf("%s\n", Get(t, "curso"));
+    
+    Remove(t, "nome");
+    printf("%s\n", Get(t, "nome"));
     
     printf("%s\n", ContainsKey(t, "nome") ? "true" : "false");
     
